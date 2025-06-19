@@ -1,4 +1,4 @@
-rom funcoes import matematica
+from funcoes import matematica
 
 def test_soma():
     assert matematica.soma(2, 3) == 5
