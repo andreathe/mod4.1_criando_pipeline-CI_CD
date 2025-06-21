@@ -9,12 +9,12 @@ X = df.drop('income', axis=1)
 y = df['income']
 
 def test_pipeline_fit():
-    pipe = pipeline.create_pipeline(X)  # Só passa X agora
+    pipe = create_pipeline(X)  # Só passa X agora
     pipe.fit(X, y)
     check_is_fitted(pipe)
 
 def test_pipeline_predict_shape():
-    pipe = pipeline.create_pipeline(X)
+    pipe = create_pipeline(X)
     pipe.fit(X.iloc[:20], y.iloc[:20])
     y_pred = pipe.predict(X.iloc[:20])
     assert len(y_pred) == 20
@@ -34,7 +34,7 @@ def test_no_nulls_in_data():
 
 #2. Teste de performance mínima: garante que o código só vai ser aceito se o modelo atinja um nível aceitável de performance.
 def test_model_performance():
-    pipe = pipeline.create_pipeline(X_train)
+    pipe = create_pipeline(X_train)
     pipe.fit(X_train, y_train)
     y_pred = pipe.predict(X_test)
 
@@ -44,7 +44,7 @@ def test_model_performance():
 
 #3. Teste de pipeline funcional: verifica se o pipeline pode ser treinado e prever sem erro em um subconjunto reduzido de dados (amostra)
 def test_pipeline_runs_on_sample():
-    pipe = pipeline.create_pipeline(X_train)
+    pipe = create_pipeline(X_train)
     X_sample = X_train.sample(10, random_state=42)
     y_sample = y_train.loc[X_sample.index]
 
@@ -57,8 +57,8 @@ def test_pipeline_runs_on_sample():
 
 # 4. Teste de reprodutibilidade simples: verifica se duas execuções seguidas do modelo resultam em predições idênticas
 def test_reproducibility():
-    pipe1 = pipeline.create_pipeline(X_train)
-    pipe2 = pipeline.create_pipeline(X_train)
+    pipe1 = create_pipeline(X_train)
+    pipe2 = create_pipeline(X_train)
 
     pipe1.fit(X_train, y_train)
     pipe2.fit(X_train, y_train)
