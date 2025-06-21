@@ -6,6 +6,16 @@ from pipeline import create_pipeline
 from sklearn.metrics import accuracy_score
 import numpy as np
 
+import pickle
+import os
+
+MODEL_PATH = "model/pipeline.pkl"
+
+def load_serialized_pipeline():
+    with open(MODEL_PATH, "rb") as f:
+        return pickle.load(f)
+    
+
 df = pd.read_csv('adult.csv', na_values=['#NAME?']) # Ajuste o caminho conforme necessário
 X = df.drop('income', axis=1)
 y = df['income']
@@ -15,12 +25,16 @@ def test_pipeline_fit():
     pipe.fit(X, y)
     check_is_fitted(pipe)
 
+# def test_pipeline_predict_shape():
+#     pipe = create_pipeline(X)
+#     pipe.fit(X.iloc[:20], y.iloc[:20])
+#     y_pred = pipe.predict(X.iloc[:20])
+#     assert len(y_pred) == 20
+
 def test_pipeline_predict_shape():
-    pipe = create_pipeline(X)
-    pipe.fit(X.iloc[:20], y.iloc[:20])
+    pipe = load_serialized_pipeline()
     y_pred = pipe.predict(X.iloc[:20])
     assert len(y_pred) == 20
-
 
 #1. Teste de integridade dos dados: verifica se o conjunto de treino/teste não possui valores nulos ou tipos inesperados.
 X_train, X_test, y_train, y_test = train_test_split(
@@ -35,11 +49,18 @@ def test_no_nulls_in_data():
 
 
 #2. Teste de performance mínima: garante que o código só vai ser aceito se o modelo atinja um nível aceitável de performance.
-def test_model_performance():
-    pipe = create_pipeline(X_train)
-    pipe.fit(X_train, y_train)
-    y_pred = pipe.predict(X_test)
+# def test_model_performance():
+#     pipe = create_pipeline(X_train)
+#     pipe.fit(X_train, y_train)
+#     y_pred = pipe.predict(X_test)
 
+#     acc = accuracy_score(y_test, y_pred)
+#     assert acc > 0.75, f"Acurácia abaixo do esperado: {acc:.2f}"
+
+
+def test_model_performance():
+    pipe = load_serialized_pipeline()
+    y_pred = pipe.predict(X_test)
     acc = accuracy_score(y_test, y_pred)
     assert acc > 0.75, f"Acurácia abaixo do esperado: {acc:.2f}"
 
@@ -76,3 +97,25 @@ def test_expected_columns():
     expected_cols = ['education', 'age', 'fnlwgt']
     for col in expected_cols:
         assert col in X_train.columns, f"Coluna ausente no dataset: {col}"
+
+
+# Adicionando PICKLE
+def test_pickle_serialization():
+    pipe = create_pipeline(X_train)
+    pipe.fit(X_train, y_train)
+
+    # Serializa temporariamente
+    with open("model/temp_pipeline.pkl", "wb") as f:
+        pickle.dump(pipe, f)
+
+    # Carrega de volta
+    with open("model/temp_pipeline.pkl", "rb") as f:
+        loaded_pipe = pickle.load(f)
+
+    # Compara previsões
+    pred_original = pipe.predict(X_test)
+    pred_loaded = loaded_pipe.predict(X_test)
+
+    assert np.array_equal(pred_original, pred_loaded), "Predições divergem após serialização"
+
+    os.remove("model/temp_pipeline.pkl")
