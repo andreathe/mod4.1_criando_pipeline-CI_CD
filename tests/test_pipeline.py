@@ -3,6 +3,8 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn.model_selection import train_test_split
 
 from pipeline import create_pipeline
+from sklearn.metrics import accuracy_score
+import numpy as np
 
 df = pd.read_csv('adult.csv', na_values=['#NAME?']) # Ajuste o caminho conforme necessário
 X = df.drop('income', axis=1)
